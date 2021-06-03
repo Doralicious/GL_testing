@@ -1,6 +1,7 @@
 
 import GLFW
 using ModernGL
+# ShaderAbstractions?
 
 include("util.jl")
 
@@ -28,12 +29,24 @@ const fsh = """
 
 L = 500
 for i = 1:L
-    println(i)
-    data = GLfloat[
-        0.5*(i/L), 0.5,
-        0.5, -0.5,
-        -0.5,-0.5
-    ]
+    #println(i)
+
+    kbin = GLFW.GetKey(window, GLFW.KEY_A)
+    println(kbin)
+
+    if kbin
+        data = GLfloat[
+            0.5*(i/L), 0.5,
+            0.5, -0.5,
+            -0.5,-0.5
+        ]
+    else
+        data = GLfloat[
+            1. - 0.5*(i/L), 0.5,
+            0.5, -0.5,
+            -0.5,-0.5
+        ]
+    end
 
     vao = glGenVertexArray()
     glBindVertexArray(vao)
@@ -54,6 +67,8 @@ for i = 1:L
     glDrawArrays(GL_TRIANGLES, 0, 3)
     GLFW.SwapBuffers(window)
     GLFW.PollEvents()
+
+    sleep(1/256)
 end
 
 
