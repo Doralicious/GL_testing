@@ -1,7 +1,7 @@
 
 import GLFW
 using ModernGL
-# ShaderAbstractions?
+using GLAbstraction
 
 include("util.jl")
 
@@ -36,15 +36,17 @@ for i = 1:L
 
     if kbin
         data = GLfloat[
-            0.5*(i/L), 0.5,
-            0.5, -0.5,
-            -0.5,-0.5
+            1. - 0.5*(i/L), 0.5,
+            -0.5, -0.5,
+            0.5,-0.5,
+            1.0, 0.0
         ]
     else
         data = GLfloat[
-            1. - 0.5*(i/L), 0.5,
-            0.5, -0.5,
-            -0.5,-0.5
+            0.5*(i/L), 0.5,
+            -0.5, -0.5,
+            0.5,-0.5,
+            1.0, 0.0
         ]
     end
 
@@ -65,10 +67,11 @@ for i = 1:L
     glClearColor(0.0, 0.0, 0.0, 1.0)
     glClear(GL_COLOR_BUFFER_BIT)
     glDrawArrays(GL_TRIANGLES, 0, 3)
-    GLFW.SwapBuffers(window)
-    GLFW.PollEvents()
+    glDrawArrays(GL_TRIANGLES, 1, 3)
+    #glDrawArrays(primitive, starting point, count)
 
-    sleep(1/256)
+    GLFW.PollEvents()
+    GLFW.SwapBuffers(window)
 end
 
 
