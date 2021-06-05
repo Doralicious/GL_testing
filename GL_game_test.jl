@@ -11,6 +11,11 @@ include("util.jl")
 
 res = (540, 540)
 
+unit_4mat = GLfloat[1. 0. 0. 0.;
+                    0. 1. 0. 0.;
+                    0. 0. 1. 0.;
+                    0. 0. 0. 1.]
+
 function hex_data(r, a)
     # for use with GL_TRIANGLE_FAN
     # r is position of center of hexagon
@@ -71,13 +76,11 @@ function oct_data(r, a)
     return data_local + translate
 end
 
-function ortho_projection(x0, y0, w, h)
-    x1 = x0 + w
-    y1 = y0 + w
-    return [2/(y1-x0) 0         0 -(y1+x0)/(y1-x0);
-            0         2/(x1-y0) 0 -(x1+y0)/(x1-y0);
-            0         0         1 0;
-            0         0         0 1]
+function ortho_projection(l, b, t, r)
+    return GLfloat[1. 0. 0.  -(l+r)/2;
+                   0. 1. 0.  -(t+b)/2;
+                   0. 0. -1. 0.;
+                   0. 0. 0.  1.]
 end
 
 function rand_2vecs_square(n, bounds)
@@ -123,10 +126,10 @@ glViewport(0, 0, res[1], res[2])
 const vsh = """
     #version 300 es
     precision highp float;
+    uniform mat4 projection;
     in vec2 position;
-    uniform mat4 persp;
     void main() {
-        gl_Position = vec4(position, 0.0, 1.0);
+        gl_Position = projection * vec4(position, 0.0, 1.0);
     }
 """
 
@@ -166,9 +169,7 @@ while !GLFW.WindowShouldClose(window)
     ## End Physics
 
     ## Control Camera
-    Vx = round(Int32, -player.pos[1]/2 .* res[1])
-    Vy = round(Int32, -player.pos[2]/2 .* res[2])
-    glViewport(Vx, Vy, res[1], res[2])
+    projection = ortho_projection(2*player.pos[1], 2*player.pos[2], 0.0, 0.0) # not sure why I have to multiply by 2, nor why t and r are 0, but this works!
     ## End Control Camera
 
     vao = glGenVertexArray()
@@ -184,6 +185,9 @@ while !GLFW.WindowShouldClose(window)
     positionAttribute = glGetAttribLocation(program, "position");
     glEnableVertexAttribArray(positionAttribute)
     glVertexAttribPointer(positionAttribute, 2, GL_FLOAT, GL_FALSE, 0, C_NULL)
+
+    projection_uniform = glGetUniformLocation(program, "projection")
+    glUniformMatrix4fv(projection_uniform, 1, GL_FALSE, projection)
 
     glClearColor(GLfloat(0.), GLfloat(0.), GLfloat(0.), GLfloat(1.))
     glClear(GL_COLOR_BUFFER_BIT)
