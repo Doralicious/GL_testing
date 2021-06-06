@@ -61,10 +61,24 @@ function add!(G::Group, E::AbstractEntity)
     G.n = G.n + 1
     push!(G.entities, E)
 end
+function add!(G::Group, EV::Vector{AbstractEntity})
+    G.n = G.n + length(EV)
+    append!(G.entities, EV)
+end
 
 function remove!(G::Group, i::Int64)
-    G.n = G.n - 1
-    deleteat!(G.entities, i)
+    if G.n >= 1
+        G.n = G.n - 1
+        deleteat!(G.entities, i)
+    end
+end
+function remove!(G::Group, I::Vector{Int64})
+    # Elements of I should be unique
+    L = length(I)
+    if G.n >= L
+        G.n = G.n - L
+        deleteat!(G.entities, I)
+    end
 end
 
 function evolve!(G::Group)
